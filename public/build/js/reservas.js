@@ -1,0 +1,1 @@
+function iniApp(){muestraReservas()}function muestraReservas(){}document.addEventListener("DOMContentLoaded",(function(){iniApp()}));

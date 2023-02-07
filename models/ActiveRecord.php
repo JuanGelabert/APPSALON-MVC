@@ -7,23 +7,22 @@ class ActiveRecord {
     protected static $tabla = '';
     protected static $columnasDB = [];
 
-    // Alertas y Mensajes
-    protected static $alertas = [];
-    
     // Definir la conexión a la BD - includes/database.php
     public static function setDB($database) {
         self::$db = $database;
     }
 
-    public static function setAlerta($tipo, $mensaje) {
-        static::$alertas[$tipo][] = $mensaje;
-    }
-
-    // Validación
+    // Alertas y Mensajes
+    protected static $alertas = [];
+    // GET
     public static function getAlertas() {
         return static::$alertas;
     }
-
+    // SET
+    public static function setAlerta($tipo, $mensaje) {
+        static::$alertas[$tipo][] = $mensaje;
+    }
+    // Validar
     public function validar() {
         static::$alertas = [];
         return static::$alertas;
@@ -63,10 +62,12 @@ class ActiveRecord {
     // Identificar y unir los atributos de la BD
     public function atributos() {
         $atributos = [];
+        
         foreach(static::$columnasDB as $columna) {
             if($columna === 'id') continue;
             $atributos[$columna] = $this->$columna;
-        }
+        }  
+
         return $atributos;
     }
 
@@ -111,21 +112,28 @@ class ActiveRecord {
 
     // Busca un registro por su id
     public static function find($id) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE id = ${id}";
+        $query = "SELECT * FROM " . static::$tabla  ." WHERE id = $id";
         $resultado = self::consultarSQL($query);
         return array_shift( $resultado ) ;
     }
 
-      // Busca un registro por su id
+      // Busca un registro por columna y valor
       public static function where($columna, $valor) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE ${columna} = '${valor}'";
+        $query = "SELECT * FROM " . static::$tabla  ." WHERE $columna = '$valor'";
         $resultado = self::consultarSQL($query);
-        return array_shift( $resultado ) ;
+        return $resultado;
+        // return array_shift( $resultado ) ;
+    }
+
+    // Consulta plana de SQL (Utilizar cuando los metodos del modelo no son suficientes)
+    public static function SQL($query) {
+        $resultado = self::consultarSQL($query);
+        return $resultado;
     }
 
     // Obtener Registros con cierta cantidad
     public static function get($limite) {
-        $query = "SELECT * FROM " . static::$tabla . " LIMIT ${limite}";
+        $query = "SELECT * FROM " . static::$tabla . " LIMIT $limite";
         $resultado = self::consultarSQL($query);
         return array_shift( $resultado ) ;
     }
@@ -136,16 +144,19 @@ class ActiveRecord {
         $atributos = $this->sanitizarAtributos();
 
         // Insertar en la base de datos
-        $query = " INSERT INTO " . static::$tabla . " ( ";
+        $query = "INSERT INTO " . static::$tabla . " ( ";
         $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES (' "; 
+        $query .= " ) VALUES ( '"; 
         $query .= join("', '", array_values($atributos));
-        $query .= " ') ";
+        $query .= "' )";
+
+        // debuguear fetch
+        // return json_encode(['query' => $query]);
 
         // Resultado de la consulta
         $resultado = self::$db->query($query);
         return [
-           'resultado' =>  $resultado,
+           'resultado' => $resultado,
            'id' => self::$db->insert_id
         ];
     }
@@ -177,6 +188,15 @@ class ActiveRecord {
         $query = "DELETE FROM "  . static::$tabla . " WHERE id = " . self::$db->escape_string($this->id) . " LIMIT 1";
         $resultado = self::$db->query($query);
         return $resultado;
+    }
+
+    // Verifica que la fecha y hora de la cita a reservar no esten ocupados
+    public function disponible() {
+        $query = "SELECT * FROM turnos WHERE fecha = '$this->fecha' AND hora = '$this->hora'";
+        $resultado = self::$db->query($query);
+
+        if ($resultado->num_rows === 0) return true;
+        else return false;
     }
 
 }

@@ -20,7 +20,41 @@
 }
 
 .app {
-    width: 95%;
+    width: 90%;
     margin: 0 auto;
-    padding: 3rem 0;
+    overflow: scroll;
+    margin-top: 1rem;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.barra {
+    display: flex;
+    justify-content: space-between;
+    a{
+        color: v.$blanco;
+        line-height: 1.15;
+        margin: 2rem 0;
+        padding-left: 2.5rem;
+        border-bottom: 1px solid v.$blanco;
+        transition: all 300ms ease;
+        &:hover {
+            color: v.$azul;
+            border-bottom: 1px solid v.$azul;
+        }
+    }
+}
+
+.barra-servicios {
+
+    .boton {
+        display: flex;
+        justify-content: space-between;
+        @include m.tablet {
+            
+        }
+        margin: 0 0 1rem 0;
+    }
 }

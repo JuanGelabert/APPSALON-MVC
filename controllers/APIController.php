@@ -46,10 +46,20 @@ class APIController {
 
         if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 
-            // Busca el registro y lo elimina de la BD
             $id = $_POST['id'];
+        
+            //Busca los registros en la tabla turnos_servicios y los almacena en un arreglo de objetos
+            $citaServicio = CitaServicio::where('turnoId', $id);
+            
+            // Itera el arreglo de objetos eliminando cada registro en la BD
+            foreach ($citaServicio as $registro) {
+                $registro->eliminar();
+            }
+
+            // Busca el registro de la cita y lo elimina de la BD
             $cita = Cita::find($id);
             $cita->eliminar();
+
 
             header('Location:' . $_SERVER['HTTP_REFERER']);
         }
